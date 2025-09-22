@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>日干支 checker</title>
+<style>
+  :root{
+    --ink:#333; --brand:#ff68b6;
+    --field-fg:#555; --field-size:16px; --field-weight:400;
+    --field-border:#cfd6e0; --field-radius:8px; --field-height:38px;
+    --field-pad-x:10px; --caret-color:#7aa8ff;
+    --nav-btn-bg:#ff68b6; --nav-btn-fg:#fff;
+    --support-offset: 25px;
+    --gap-kanshi-reading:-4px;
+
+    /* ここを触れば高さバランスを微調整できます */
+    --result-min:32px;   /* 干支（26px想定） */
+    --reading-min:18px;  /* 読み（12px想定） */
+    --persona-min:22px;  /* 〈〇〇の人〉（14px想定） */
+
+    --persona-size:14px; --persona-weight:600;
+  }
+
+  html,body{ margin:0; padding:0; height:100%; -webkit-text-size-adjust:100%; color:var(--ink); }
+  body{
+    font-family:'Hiragino Kaku Gothic ProN', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
+    text-align:center;
+    background:url('iloiloback.jpg') no-repeat center/cover;
+  }
+  .wrap{
+    min-height:100svh; padding:24px 16px calc(24px + env(safe-area-inset-bottom));
+    display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px;
+  }
+  .card{
+    background:rgba(255,255,255,.6);
+    border-radius:50%; width:260px; height:260px;
+    box-shadow:0 8px 24px rgba(0,0,0,.1);
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    padding:18px;
+  }
+  .logo{ font-family:'Futura','Avenir Next','Montserrat',sans-serif; font-weight:900; font-size:34px; margin:0; }
+  .sub{ font-family:'Futura','Avenir Next','Montserrat',sans-serif; font-weight:400; font-size:17px; margin:2px 0 0; }
+
+  .row{ display:flex; gap:8px; align-items:center; justify-content:center; margin-top:10px; }
+  .field{
+    height:var(--field-height);
+    border:1px solid var(--field-border); border-radius:var(--field-radius);
+    background:#fff; font-size:var(--field-size); font-weight:var(--field-weight);
+    color:var(--field-fg); line-height:1;
+  }
+  .ym-box{ position:relative; display:inline-flex; align-items:center; gap:8px;
+    padding:0 calc(var(--field-pad-x) + 18px) 0 var(--field-pad-x); }
+  .ym-year,.ym-month,.ym-suffix{ pointer-events:none; user-select:none; }
+  .ym-suffix{ opacity:.9; }
+  .ym-caret{ position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    font-size:10px; color:var(--caret-color); pointer-events:none; }
+  .ym-box input[type="month"]{
+    position:absolute; inset:0; width:100%; height:100%;
+    opacity:0; border:0; background:transparent; appearance:none; -webkit-appearance:none;
+    cursor:pointer;
+  }
+  .day-box{ position:relative; display:inline-block; padding:0 var(--field-pad-x); }
+  .day-box select{
+    appearance:none; -webkit-appearance:none; outline:none;
+    border:0; background:transparent; color:var(--field-fg);
+    font-size:var(--field-size); font-weight:var(--field-weight);
+    height:100%; padding-right:32px;
+  }
+  .day-suffix{ position:absolute; right:22px; top:50%; transform:translateY(-50%);
+    font-size:var(--field-size); font-weight:var(--field-weight); color:var(--field-fg); opacity:.9; }
+  .day-box::after{ content:"▼"; position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    font-size:10px; color:var(--caret-color); pointer-events:none; }
+
+  /* 干支・読み・人物表示（初期から高さを確保） */
+  .result{
+    margin-top:12px; font-size:26px; font-weight:700;
+    min-height:var(--result-min); line-height:1.2;
+  }
+  .reading{
+    margin-top:var(--gap-kanshi-reading); font-size:12px; color:#444;
+    min-height:var(--reading-min); line-height:1.2;
+  }
+  .persona{
+    margin-top:4px; font-size:var(--persona-size); font-weight:var(--persona-weight); color:#222;
+    min-height:var(--persona-min); line-height:1.2;
+  }
+
+  /* fade アニメーション */
+  .fade-text { transition: opacity .45s ease-in-out, transform .45s ease-in-out; }
+  .fade-text.is-fading-out { opacity:0; transform:translateY(6px); }
+  .fade-text.is-fading-in  { opacity:1; transform:translateY(0); }
+
+  /* 初期化中はトランジションを無効化（初回の“かくっ”を防止） */
+  .is-initializing .fade-text { transition:none !important; }
+
+  .nav{ margin-top:4px; }
+  .nav .to-calendar{
+    text-decoration:none; font-size:14px; font-weight:600;
+    background:var(--nav-btn-bg); color:var(--nav-btn-fg);
+    padding:8px 14px; border-radius:999px; display:inline-block;
+  }
+  .support-footer{ position:fixed; left:0; right:0; bottom:var(--support-offset); z-index:10; text-align:center; }
+  .support-btn{
+    text-decoration:none; font-size:12px; font-weight:600;
+    color:#ff7f50; background:transparent; border:2px solid #ff7f50;
+    padding:6px 10px; border-radius:10px; display:inline-block; opacity:.9;
+  }
+  /* AdSense審査中は非表示 */
+  .support-footer { display:none !important; }
+</style>
+</head>
+<body class="is-initializing">
+  <div class="wrap">
+    <div class="card">
+      <h1 class="logo">ilo.ilo</h1>
+      <div class="sub">日干支 checker</div>
+      <div class="row">
+        <span class="field ym-box">
+          <span class="ym-year" id="ymYear">----</span>
+          <span class="ym-suffix">年</span>
+          <span class="ym-month" id="ymMonth">--</span>
+          <span class="ym-suffix">月</span>
+          <span class="ym-caret">▼</span>
+          <input type="month" id="ymInput" />
+        </span>
+        <span class="field day-box">
+          <select id="day"></select>
+          <span class="day-suffix">日</span>
+        </span>
+      </div>
+
+      <!-- 初期から高さを確保するために &nbsp; を入れておく -->
+      <div class="result  fade-text" id="result">&nbsp;</div>
+      <div class="reading fade-text" id="reading">&nbsp;</div>
+      <div class="persona fade-text" id="persona">&nbsp;</div>
+    </div>
+
+    <div class="nav">
+      <a class="to-calendar" href="calendar.html" rel="noopener">🗓️日干支カレンダーへ ▶︎</a>
+    </div>
+  </div>
+
+  <div class="support-footer">
+    <a class="support-btn" href="https://ofuse.me/izuiloilo" target="_blank" rel="noopener">izuを応援する</a>
+  </div>
+
+<script>
+  const stems = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+  const stemsReading = ["きのえ","きのと","ひのえ","ひのと","つちのえ","つちのと","かのえ","かのと","みずのえ","みずのと"];
+  const branches = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+  const branchesReading = ["ね","うし","とら","う","たつ","み","うま","ひつじ","さる","とり","いぬ","い"];
+  const stemPersona = {
+    "甲":"🌳樹木の人","乙":"🪻草花の人","丙":"☀️太陽の人","丁":"🔥炎の人",
+    "戊":"⛰️山の人","己":"🌱大地の人","庚":"🪨岩・鉄塊の人","辛":"💍宝石の人",
+    "壬":"🌊海・大河の人","癸":"☔️雨の人"
+  };
+
+  const baseDate = new Date(1984, 2, 31); // 3/31 甲子
+  function kanshiIndexFromDate(date){
+    const diffDays = Math.floor((date - baseDate)/(1000*60*60*24));
+    return (diffDays % 60 + 60) % 60;
+  }
+
+  const ymInput = document.getElementById('ymInput');
+  const ymYear = document.getElementById('ymYear');
+  const ymMonth = document.getElementById('ymMonth');
+  const daySel = document.getElementById('day');
+  const resultEl = document.getElementById('result');
+  const readingEl = document.getElementById('reading');
+  const personaEl = document.getElementById('persona');
+
+  let curYear, curMonth;
+
+  function updateDays(){
+    const last = new Date(curYear, curMonth, 0).getDate();
+    const keep = +daySel.value || 1;
+    daySel.innerHTML='';
+    for(let d=1; d<=last; d++){ daySel.add(new Option(d,d)); }
+    daySel.value = Math.min(keep, last);
+  }
+  function updateYmLabel(){
+    ymYear.textContent = curYear;
+    ymMonth.textContent = curMonth;
+  }
+
+  function updateResult(){
+    const d = +daySel.value;
+    if(!curYear || !curMonth || !d) return;
+    const date = new Date(curYear, curMonth-1, d);
+    const idx = kanshiIndexFromDate(date);
+    const stem=stems[idx%10], branch=branches[idx%12];
+    const stemR=stemsReading[idx%10], branchR=branchesReading[idx%12];
+    const persona = `〈${stem}${stemPersona[stem]}〉`;
+
+    const updates = [
+      {el: resultEl,  text: stem + branch},
+      {el: readingEl, text: stemR + branchR},
+      {el: personaEl, text: persona}
+    ];
+
+    updates.forEach(({el, text})=>{
+      el.classList.add('is-fading-out');
+      setTimeout(()=>{
+        el.textContent = text || "\u00A0"; // 念のため空になる場合も高さ維持
+        requestAnimationFrame(()=>{
+          el.classList.remove('is-fading-out');
+          el.classList.add('is-fading-in');
+          setTimeout(()=>el.classList.remove('is-fading-in'), 500);
+        });
+      }, 300); // ← ここは前回いずちゃんが決めた“ちょうどいい”ディレイ
+    });
+  }
+
+  // 初期化
+  (function init(){
+    const t=new Date();
+    curYear=t.getFullYear(); curMonth=t.getMonth()+1;
+    updateYmLabel();
+
+    // month対応端末では初期値を入れてから日を生成
+    if(ymInput.type==="month"){
+      ymInput.value=`${curYear}-${String(curMonth).padStart(2,'0')}`;
+    }
+    for(let d=1; d<=31; d++){ daySel.add(new Option(d,d)); }
+    updateDays();
+    daySel.value=t.getDate();
+
+    // 初期表示（このタイミングではtransition無効なのでガクッとしない）
+    updateResult();
+
+    // 初期化完了 → トランジション有効化
+    document.body.classList.remove('is-initializing');
+
+    // 以降の変更に反応
+    if(ymInput.type === "month"){
+      ymInput.addEventListener('change', ()=>{
+        if(!ymInput.value) return;
+        const [y,m] = ymInput.value.split('-').map(v=>+v);
+        curYear=y; curMonth=m; updateYmLabel(); updateDays(); updateResult();
+      });
+    }
+    daySel.addEventListener('change', updateResult);
+  })();
+</script>
+</body>
+</html>
