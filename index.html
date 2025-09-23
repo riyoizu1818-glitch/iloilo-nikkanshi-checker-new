@@ -18,9 +18,6 @@
     --reading-min:18px;
     --persona-min:22px;
     --persona-size:14px; --persona-weight:600;
-
-    /* 追加：🏠ピルボタンの色（カレンダーと共通） */
-    --pill-green:#6abf69;
   }
 
   html,body{ margin:0; padding:0; height:100%; -webkit-text-size-adjust:100%; color:var(--ink); }
@@ -30,29 +27,41 @@
     background:url('iloiloback.jpg') no-repeat center/cover;
   }
 
-  /* ── 上ナビ（左：使い方 / 右：HOME） ───────────────── */
-  .topbar{
+  /* ── 右上：テキストのヘッダーメニュー（カレンダーと同じノリ） ── */
+  .headnav{
     width:min(720px,92vw);
-    margin:12px auto 0;
-    display:flex; align-items:center; justify-content:space-between;
+    margin:8px auto 0;
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    font-family:'Futura','Avenir Next','Montserrat',sans-serif;
+    font-weight:500;
+    letter-spacing:.02em;
+    font-size:14px;
+    color:#666;
   }
-  .topbar-left a{
-    display:inline-block; margin-right:10px;
-    font-size:14px; font-weight:700; color:#666; text-decoration:none;
+  .headnav a{
+    color:inherit;
+    text-decoration:none;
+    padding:0 10px;          /* 文字と区切りの間隔 */
+    line-height:1;
   }
-  .topbar-left a::before{ content:"▶︎ "; color:#666; margin-right:2px; }
-  .home-btn{
-    display:inline-block; padding:6px 18px; border-radius:999px;
-    background:var(--pill-green); color:#fff; font-weight:700; font-size:13px;
-    text-decoration:none; box-shadow:0 2px 6px rgba(0,0,0,.12);
+  /* 極細の区切り線（aの直後にだけ付与） */
+  .headnav a + a{
+    margin-left:10px;        /* 文字-線-文字の見た目バランス */
+    padding-left:12px;
+    border-left:1px solid rgba(0,0,0,.28);  /* 細い縦線 */
   }
-  @media (max-width:420px){
-    .topbar{ margin-top:10px; }
-    .topbar-left a{ font-size:12px; margin-right:6px; }
-    .home-btn{ padding:5px 10px; font-size:12px; }
-  }
-  /* ──────────────────────────────────────────────── */
+  .headnav a:hover{ color:#333; }
 
+  /* ちいさめ端末での微調整（PCの見た目は維持） */
+  @media (max-width:420px){
+    .headnav{ font-size:13px; }
+    .headnav a{ padding:0 8px; }
+    .headnav a + a{ margin-left:8px; padding-left:10px; }
+  }
+
+  /* ── 本体 ── */
   .wrap{
     min-height:100svh; padding:14px 16px calc(24px + env(safe-area-inset-bottom));
     display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px;
@@ -135,15 +144,11 @@
 </head>
 <body class="is-initializing">
 
-  <!-- 上ナビ（左：使い方 / 右：🏠） -->
-  <div class="topbar">
-    <div class="topbar-left">
-      <a href="https://izuchan.com/iloilo-checker-sestumei/">日干支チェッカーの使い方</a>
-    </div>
-    <div class="topbar-right">
-      <a class="home-btn" href="https://izuchan.com/">🏠</a>
-    </div>
-  </div>
+  <!-- 右上ヘッダーメニュー（使い方 | HOME） -->
+  <nav class="headnav">
+    <a href="https://izuchan.com/iloilo-checker-sestumei/">使い方</a>
+    <a href="https://izuchan.com/">HOME</a>
+  </nav>
 
   <div class="wrap">
     <div class="card">
@@ -169,15 +174,14 @@
       <div class="reading fade-text" id="reading">&nbsp;</div>
       <div class="persona fade-text" id="persona">&nbsp;</div>
     </div>
-  
-    
+
     <div class="nav">
-      <a class="to-calendar" href="https://izuchan.com/iloilo-nikkanshi-calendar/" rel="noopener">🗓️日干支カレンダーへ ▶︎</a>
+      <a class="to-calendar" href="https://izuchan.com/iloilo-nikkanshi-calendar/">🗓️日干支カレンダーへ ▶︎</a>
     </div>
   </div>
 
   <div class="support-footer">
-    <a class="support-btn" href="https://ofuse.me/izuiloilo" target="_blank" rel="noopener">izuを応援する</a>
+    <a class="support-btn" href="https://ofuse.me/izuiloilo">izuを応援する</a>
   </div>
 
 <script>
@@ -272,6 +276,12 @@
     }
     daySel.addEventListener('change', updateResult);
   })();
+
+  /* すべてのリンクを別タブで開く */
+  document.querySelectorAll("a").forEach(a=>{
+    a.setAttribute("target","_blank");
+    a.setAttribute("rel","noopener noreferrer");
+  });
 </script>
 </body>
 </html>
