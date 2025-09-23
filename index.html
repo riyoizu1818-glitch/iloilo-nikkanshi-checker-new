@@ -37,7 +37,7 @@
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
     font-weight:500;
     letter-spacing:.02em;
-    font-size:14px;
+    font-size:15px;
     color:#666;
   }
   .headnav a{
@@ -229,7 +229,7 @@
     const date = new Date(curYear, curMonth-1, d);
     const idx = kanshiIndexFromDate(date);
     const stem=stems[idx%10], branch=branches[idx%12];
-    const stemR=stemsReading[idx%10], branchR=branches[idx%12];
+    const stemR = stemsReading[idx%10], branchR = branchesReading[idx%12];
     const persona = `〈${stem}${stemPersona[stem]}〉`;
 
     const updates = [
