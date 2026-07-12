@@ -380,6 +380,24 @@
     ymMonth.textContent = curMonth;
   }
 
+  /* ── 拡張子の表記ゆれ対応（.jpg / .JPG / .jpeg / .JPEG を順に試す） ──
+     スマホやアプリによってアップロード時の拡張子が変わることがあるため、
+     見つかるまで順番に試して、見つかった拡張子のURLをコールバックで返す。
+  */
+  const EXT_CANDIDATES = ['jpg','JPG','jpeg','JPEG'];
+  function resolveImageUrl(baseNoExt, onFound, onNotFound){
+    let i = 0;
+    function tryNext(){
+      if(i >= EXT_CANDIDATES.length){ onNotFound && onNotFound(); return; }
+      const testUrl = `${baseNoExt}.${EXT_CANDIDATES[i]}`;
+      const testImg = new Image();
+      testImg.onload = () => onFound(testUrl);
+      testImg.onerror = () => { i++; tryNext(); };
+      testImg.src = testUrl;
+    }
+    tryNext();
+  }
+
   function updatePanel(num){
     const numStr = String(num).padStart(2,'0');
     const hasIllustration = etoIllustrated.has(num);
@@ -391,11 +409,20 @@
     setTimeout(()=>{
       if(hasIllustration){
         panelArtEl.classList.remove('is-pending');
-        panelArtEl.innerHTML = `<img src="${ILLUSTRATIONS_DIR}/${numStr}.jpg" alt="No.${num} カラースケープ" />`;
-
-        // 背景にも同じカラースケープをふわっと反映
-        bgScapeEl.style.backgroundImage = `url('${ILLUSTRATIONS_DIR}/${numStr}.jpg')`;
-        requestAnimationFrame(()=> bgScapeEl.classList.add('is-visible'));
+        const baseNoExt = `${ILLUSTRATIONS_DIR}/${numStr}`;
+        resolveImageUrl(
+          baseNoExt,
+          (foundUrl)=>{
+            panelArtEl.innerHTML = `<img src="${foundUrl}" alt="No.${num} カラースケープ" />`;
+            bgScapeEl.style.backgroundImage = `url('${foundUrl}')`;
+            requestAnimationFrame(()=> bgScapeEl.classList.add('is-visible'));
+          },
+          ()=>{
+            // どの拡張子でも見つからなかった場合は準備中表示にフォールバック
+            panelArtEl.classList.add('is-pending');
+            panelArtEl.innerHTML = '<div class="pending-msg"><span class="pin">🖌️</span>この景色は制作中です</div>';
+          }
+        );
       } else {
         panelArtEl.classList.add('is-pending');
         panelArtEl.innerHTML = '<div class="pending-msg"><span class="pin">🖌️</span>この景色は制作中です</div>';
