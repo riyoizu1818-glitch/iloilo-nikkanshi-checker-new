@@ -18,6 +18,8 @@
     --reading-min:18px;
     --persona-min:22px;
     --persona-size:14px; --persona-weight:600;
+
+    --panel-radius:20px;
   }
 
   html,body{ margin:0; padding:0; height:100%; -webkit-text-size-adjust:100%; color:var(--ink); }
@@ -43,18 +45,16 @@
   .headnav a{
     color:inherit;
     text-decoration:none;
-    padding:0 10px;          /* 文字と区切りの間隔 */
+    padding:0 10px;
     line-height:1;
   }
-  /* 極細の区切り線（aの直後にだけ付与） */
   .headnav a + a{
-    margin-left:10px;        /* 文字-線-文字の見た目バランス */
+    margin-left:10px;
     padding-left:12px;
-    border-left:2px solid rgba(0,0,0,.28);  /* 細い縦線 */
+    border-left:2px solid rgba(0,0,0,.28);
   }
   .headnav a:hover{ color:#333; }
 
-  /* ちいさめ端末での微調整（PCの見た目は維持） */
   @media (max-width:420px){
     .headnav{ font-size:13px; }
     .headnav a{ padding:0 8px; }
@@ -64,19 +64,20 @@
   /* ── 本体 ── */
   .wrap{
     min-height:100svh; padding:14px 16px calc(24px + env(safe-area-inset-bottom));
-    display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px;
+    display:flex; flex-direction:column; justify-content:center; align-items:center; gap:18px;
   }
   .card{
     background:rgba(255,255,255,.6);
-    border-radius:50%; width:260px; height:260px;
+    border-radius:50%; width:290px; height:290px;
     box-shadow:0 8px 24px rgba(0,0,0,.1);
     display:flex; flex-direction:column; justify-content:center; align-items:center;
-    padding:18px;
+    padding:22px;
+    flex-shrink:0;
   }
-  .logo{ font-family:'Futura','Avenir Next','Montserrat',sans-serif; font-weight:900; font-size:34px; margin:0; }
-  .sub{ font-family:'Futura','Avenir Next','Montserrat',sans-serif; font-weight:400; font-size:17px; margin:2px 0 0; }
+  .logo{ font-family:'Futura','Avenir Next','Montserrat',sans-serif; font-weight:900; font-size:30px; margin:0; }
+  .sub{ font-family:'Futura','Avenir Next','Montserrat',sans-serif; font-weight:400; font-size:14px; margin:2px 0 0; color:#666; }
 
-  .row{ display:flex; gap:8px; align-items:center; justify-content:center; margin-top:10px; }
+  .row{ display:flex; gap:8px; align-items:center; justify-content:center; margin-top:14px; }
   .field{
     height:var(--field-height);
     border:1px solid var(--field-border); border-radius:var(--field-radius);
@@ -106,16 +107,27 @@
   .day-box::after{ content:"▼"; position:absolute; right:8px; top:50%; transform:translateY(-50%);
     font-size:10px; color:var(--caret-color); pointer-events:none; }
 
+  .eto-no{
+    margin-top:16px;
+    font-family:'Futura','Avenir Next','Montserrat',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:.08em;
+    color:var(--brand);
+    min-height:14px;
+    line-height:1.2;
+  }
+
   .result{
-    margin-top:12px; font-size:26px; font-weight:700;
-    min-height:var(--result-min); line-height:1.2;
+    margin-top:4px; font-size:28px; font-weight:700;
+    min-height:var(--result-min); line-height:1.15;
   }
   .reading{
-    margin-top:var(--gap-kanshi-reading); font-size:12px; color:#444;
+    margin-top:0; font-size:12px; color:#777;
     min-height:var(--reading-min); line-height:1.2;
   }
   .persona{
-    margin-top:4px; font-size:var(--persona-size); font-weight:var(--persona-weight); color:#222;
+    margin-top:10px; font-size:var(--persona-size); font-weight:var(--persona-weight); color:#222;
     min-height:var(--persona-min); line-height:1.2;
   }
 
@@ -124,13 +136,74 @@
   .fade-text.is-fading-in  { opacity:1; transform:translateY(0); }
 
   .is-initializing .fade-text { transition:none !important; }
+  .is-initializing .panel { transition:none !important; }
 
-  .nav{ margin-top:4px; }
-  .nav .to-calendar{
-    text-decoration:none; font-size:14px; font-weight:600;
-    background:var(--nav-btn-bg); color:var(--nav-btn-fg);
-    padding:8px 14px; border-radius:999px; display:inline-block;
+  /* ── イラストパネル ── */
+  .panel{
+    width:min(320px,88vw);
+    border-radius:var(--panel-radius);
+    background:rgba(255,255,255,.55);
+    box-shadow:0 8px 24px rgba(0,0,0,.1);
+    overflow:hidden;
+    opacity:0;
+    transform:translateY(10px);
+    transition:opacity .5s ease-in-out, transform .5s ease-in-out;
   }
+  .panel.is-visible{ opacity:1; transform:translateY(0); }
+
+  .panel-art{
+    width:100%;
+    aspect-ratio: 4 / 3;
+    background-size:cover;
+    background-position:center;
+    background-color:rgba(255,255,255,.4);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .panel-art.is-pending{
+    background-image:none !important;
+  }
+  .pending-msg{
+    font-size:13px;
+    color:#888;
+    font-weight:500;
+    letter-spacing:.02em;
+  }
+  .pending-msg .pin{ font-size:18px; display:block; margin-bottom:4px; }
+
+  .panel-body{
+    padding:14px 16px 18px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
+  .panel-link{
+    text-decoration:none;
+    font-size:13px;
+    font-weight:700;
+    color:#fff;
+    background:var(--brand);
+    padding:9px 18px;
+    border-radius:999px;
+    display:inline-block;
+    box-shadow:0 4px 10px rgba(255,104,182,.35);
+  }
+  .panel-link[aria-disabled="true"]{
+    background:#cfd6e0;
+    color:#888;
+    box-shadow:none;
+    pointer-events:none;
+  }
+
+  .nav{ margin-top:2px; }
+  .nav .to-calendar{
+    text-decoration:none; font-size:12px; font-weight:600;
+    color:#888; background:transparent; border:1px solid rgba(0,0,0,.18);
+    padding:6px 12px; border-radius:999px; display:inline-block;
+  }
+  .nav .to-calendar:hover{ color:#555; border-color:rgba(0,0,0,.32); }
 
   .support-footer{ position:fixed; left:0; right:0; bottom:var(--support-offset); z-index:10; text-align:center; }
   .support-btn{
@@ -170,13 +243,22 @@
         </span>
       </div>
 
+      <div class="eto-no fade-text" id="etoNo">&nbsp;</div>
       <div class="result  fade-text" id="result">&nbsp;</div>
       <div class="reading fade-text" id="reading">&nbsp;</div>
       <div class="persona fade-text" id="persona">&nbsp;</div>
     </div>
 
+    <!-- イラストパネル -->
+    <div class="panel" id="panel">
+      <div class="panel-art" id="panelArt"></div>
+      <div class="panel-body">
+        <a class="panel-link" id="panelLink" href="#" rel="noopener noreferrer">この景色を読む</a>
+      </div>
+    </div>
+
     <div class="nav">
-      <a class="to-calendar" href="https://izuchan.com/iloilo-nikkanshi-calendar/">🗓️日干支カレンダーへ ▶︎</a>
+      <a class="to-calendar" href="https://izuchan.com/iloilo-nikkanshi-calendar/">🗓️ 日干支カレンダーへ</a>
     </div>
   </div>
 
@@ -190,9 +272,33 @@
   const branches = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
   const branchesReading = ["ね","うし","とら","う","たつ","み","うま","ひつじ","さる","とり","いぬ","い"];
   const stemPersona = {
-    "甲":"🌳樹木の人","乙":"🪻草花の人","丙":"☀️太陽の人","丁":"🔥炎の人",
-    "戊":"⛰️山の人","己":"🪏大地の人","庚":"🪨岩・鉄塊の人","辛":"💍宝石の人",
-    "壬":"🌊海・大河の人","癸":"☔️雨の人"
+    "甲":"🌳樹木タイプ","乙":"🪻草花タイプ","丙":"☀️太陽タイプ","丁":"🔥炎タイプ",
+    "戊":"⛰️山タイプ","己":"🪏大地タイプ","庚":"🪨岩・鉄塊タイプ","辛":"💍宝石タイプ",
+    "壬":"🌊海・大河タイプ","癸":"☔️雨タイプ"
+  };
+
+  /* ── 干支番号（甲子=01〜癸亥=60）──
+     六十干支の周期そのままの並び順。
+     画像ファイル名は「番号.jpg」（例: 丁亥=24 → 24.jpg）で統一。
+  */
+  function kanshiNumber(stem, branch){
+    const stemIdx = stems.indexOf(stem);
+    const branchIdx = branches.indexOf(branch);
+    for(let n=0; n<60; n++){
+      if(n % 10 === stemIdx && n % 12 === branchIdx){ return n + 1; }
+    }
+    return null;
+  }
+
+  const ILLUSTRATIONS_DIR = "illustrations"; // GitHubリポジトリ内のフォルダ名に合わせて変更可
+
+  /* ── 記事が完成した干支の番号だけ、ここに追加してください ──
+     例: 24番（丁亥）の記事ができたら 24: "https://izuchan.com/hinoto-i/" を追加。
+     未登録の番号は自動的に「準備中」表示になります。
+  */
+  const etoArticleUrls = {
+    // 24: "https://izuchan.com/hinoto-i/",
+    // 17: "https://izuchan.com/kanoe-tatsu/",
   };
 
   const baseDate = new Date(1984, 2, 31);
@@ -205,9 +311,13 @@
   const ymYear = document.getElementById('ymYear');
   const ymMonth = document.getElementById('ymMonth');
   const daySel = document.getElementById('day');
+  const etoNoEl = document.getElementById('etoNo');
   const resultEl = document.getElementById('result');
   const readingEl = document.getElementById('reading');
   const personaEl = document.getElementById('persona');
+  const panelEl = document.getElementById('panel');
+  const panelArtEl = document.getElementById('panelArt');
+  const panelLinkEl = document.getElementById('panelLink');
 
   let curYear, curMonth;
 
@@ -223,6 +333,39 @@
     ymMonth.textContent = curMonth;
   }
 
+  function updatePanel(num){
+    const numStr = String(num).padStart(2,'0');
+    const url = etoArticleUrls[num];
+
+    // いったんフェードアウト
+    panelEl.classList.remove('is-visible');
+
+    setTimeout(()=>{
+      if(url){
+        panelArtEl.classList.remove('is-pending');
+        panelArtEl.style.backgroundImage = `url('${ILLUSTRATIONS_DIR}/${numStr}.jpg')`;
+        panelArtEl.innerHTML = '';
+        panelLinkEl.href = url;
+        panelLinkEl.textContent = 'この景色を読む';
+        panelLinkEl.removeAttribute('aria-disabled');
+        panelLinkEl.setAttribute('target','_blank');
+        panelLinkEl.setAttribute('rel','noopener noreferrer');
+      } else {
+        panelArtEl.classList.add('is-pending');
+        panelArtEl.style.backgroundImage = 'none';
+        panelArtEl.innerHTML = '<div class="pending-msg"><span class="pin">🖌️</span>この景色は制作中です</div>';
+        panelLinkEl.textContent = '準備中';
+        panelLinkEl.href = '#';
+        panelLinkEl.setAttribute('aria-disabled','true');
+        panelLinkEl.removeAttribute('target');
+      }
+
+      requestAnimationFrame(()=>{
+        panelEl.classList.add('is-visible');
+      });
+    }, 260);
+  }
+
   function updateResult(){
     const d = +daySel.value;
     if(!curYear || !curMonth || !d) return;
@@ -231,9 +374,12 @@
     const stem=stems[idx%10], branch=branches[idx%12];
     const stemR = stemsReading[idx%10], branchR = branchesReading[idx%12];
     const persona = `〈${stem}${stemPersona[stem]}〉`;
+    const kanshi = stem + branch;
+    const num = kanshiNumber(stem, branch);
 
     const updates = [
-      {el: resultEl,  text: stem + branch},
+      {el: etoNoEl,   text: `No.${num}`},
+      {el: resultEl,  text: kanshi},
       {el: readingEl, text: stemR + branchR},
       {el: personaEl, text: persona}
     ];
@@ -249,6 +395,8 @@
         });
       }, 300);
     });
+
+    updatePanel(num);
   }
 
   (function init(){
@@ -264,6 +412,8 @@
     daySel.value=t.getDate();
 
     updateResult();
+    // 初期表示ではフェードなしで即表示
+    panelEl.classList.add('is-visible');
 
     document.body.classList.remove('is-initializing');
 
@@ -277,8 +427,9 @@
     daySel.addEventListener('change', updateResult);
   })();
 
-  /* すべてのリンクを別タブで開く */
-  document.querySelectorAll("a").forEach(a=>{
+  /* すべてのリンクを別タブで開く（無効リンクは除く） */
+  document.querySelectorAll("a:not([aria-disabled='true'])").forEach(a=>{
+    if(a.id === 'panelLink') return; // panelLinkは updatePanel 内で個別制御
     a.setAttribute("target","_blank");
     a.setAttribute("rel","noopener noreferrer");
   });
