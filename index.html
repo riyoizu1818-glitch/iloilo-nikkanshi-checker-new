@@ -20,19 +20,27 @@
     position:relative;
   }
 
-  /* ── 背景レイヤー（既定の水彩柄。常に一番下に敷く） ── */
+  /* ── 背景レイヤー①：ベージュ単色（一番下・常時・切り替えの"つなぎ"にも使う） ── */
+  .bg-solid{
+    position:fixed; inset:0; z-index:-3;
+    background:#f4ede1;
+  }
+  /* ── 背景レイヤー②：既定の水彩柄（イラスト未登録の日に表示） ── */
   .bg-base{
     position:fixed; inset:0; z-index:-2;
     background:url('iloiloback.jpg') no-repeat center center;
     background-size:cover;
+    opacity:1;
+    transition:opacity .4s ease-in-out;
   }
-  /* ── 背景レイヤー（干支のカラースケープ。あるときだけフェードイン） ── */
+  .bg-base.is-hidden{ opacity:0; }
+  /* ── 背景レイヤー③：干支のカラースケープ（あるときだけフェードイン） ── */
   .bg-scape{
     position:fixed; inset:0; z-index:-1;
     background-size:cover;
     background-position:center;
     opacity:0;
-    transition:opacity .8s ease-in-out;
+    transition:opacity .4s ease-in-out;
   }
   .bg-scape.is-visible{ opacity:1; }
 
@@ -145,6 +153,8 @@
   .fade-text.is-fading-in  { opacity:1; transform:translateY(0); }
   .is-initializing .fade-text { transition:none !important; }
   .is-initializing .panel-art-wrap { transition:none !important; }
+  .is-initializing .bg-base,
+  .is-initializing .bg-scape { transition:none !important; }
 
   /* ラベル：Color Scape */
   .scape-label{
@@ -245,7 +255,8 @@
 </head>
 <body class="is-initializing">
 
-  <div class="bg-base"></div>
+  <div class="bg-solid"></div>
+  <div class="bg-base" id="bgBase"></div>
   <div class="bg-scape" id="bgScape"></div>
 
   <nav class="headnav">
@@ -362,6 +373,7 @@
   const panelArtEl = document.getElementById('panelArt');
   const panelLinkEl = document.getElementById('panelLink');
   const bgScapeEl = document.getElementById('bgScape');
+  const bgBaseEl = document.getElementById('bgBase');
 
   let curYear, curMonth;
 
@@ -402,6 +414,7 @@
 
     panelArtWrapEl.style.opacity = 0;
     bgScapeEl.classList.remove('is-visible');
+    bgBaseEl.classList.add('is-hidden');
 
     setTimeout(()=>{
       if(hasIllustration){
@@ -418,11 +431,15 @@
             // どの拡張子でも見つからなかった場合は準備中表示にフォールバック
             panelArtEl.classList.add('is-pending');
             panelArtEl.innerHTML = '<div class="pending-msg"><span class="pin">🖌️</span>この景色は制作中です</div>';
+            // イラストが結局見つからない日は既定の水彩背景に戻す
+            requestAnimationFrame(()=> bgBaseEl.classList.remove('is-hidden'));
           }
         );
       } else {
         panelArtEl.classList.add('is-pending');
         panelArtEl.innerHTML = '<div class="pending-msg"><span class="pin">🖌️</span>この景色は制作中です</div>';
+        // イラストが無い日は既定の水彩背景を表示
+        requestAnimationFrame(()=> bgBaseEl.classList.remove('is-hidden'));
       }
 
       if(url){
