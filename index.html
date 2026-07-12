@@ -116,8 +116,14 @@
   .day-box::after{ content:"▼"; position:absolute; right:8px; top:50%; transform:translateY(-50%);
     font-size:9px; color:var(--caret-color); pointer-events:none; }
 
+  .result-block{
+    margin-top:14px;
+    padding:12px 16px 14px;
+    border-radius:20px;
+    background:rgba(255,255,255,.55);
+  }
   .eto-no{
-    margin-top:12px;
+    margin-top:0;
     font-family:'Futura','Avenir Next','Montserrat',sans-serif;
     font-weight:700;
     font-size:11px;
@@ -233,6 +239,16 @@
   .nav .to-calendar:hover{ color:#555; background:rgba(255,255,255,.7); }
 
   .support-footer { display:none !important; }
+
+  .intro-hint{
+    font-size:13px;
+    font-weight:500;
+    color:#555;
+    background:rgba(255,255,255,.55);
+    padding:6px 14px;
+    border-radius:999px;
+    flex-shrink:0;
+  }
 </style>
 </head>
 <body class="is-initializing">
@@ -246,6 +262,8 @@
   </nav>
 
   <div class="wrap">
+
+    <div class="intro-hint">生年月日を入れてみてね</div>
 
     <div class="panel" id="panel">
       <div class="panel-top">
@@ -267,10 +285,12 @@
           </span>
         </div>
 
-        <div class="eto-no fade-text" id="etoNo">&nbsp;</div>
-        <div class="result  fade-text" id="result">&nbsp;</div>
-        <div class="reading fade-text" id="reading">&nbsp;</div>
-        <div class="persona fade-text" id="persona">&nbsp;</div>
+        <div class="result-block">
+          <div class="eto-no fade-text" id="etoNo">&nbsp;</div>
+          <div class="result  fade-text" id="result">&nbsp;</div>
+          <div class="reading fade-text" id="reading">&nbsp;</div>
+          <div class="persona fade-text" id="persona">&nbsp;</div>
+        </div>
       </div>
 
       <div class="scape-label">Color Scape</div>
