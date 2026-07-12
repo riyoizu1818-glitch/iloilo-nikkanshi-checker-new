@@ -23,7 +23,7 @@
   /* ── 背景レイヤー①：ベージュ単色（一番下・常時・切り替えの"つなぎ"にも使う） ── */
   .bg-solid{
     position:fixed; inset:0; z-index:-3;
-    background:#f4ede1;
+    background:#faf6ef;
   }
   /* ── 背景レイヤー②：既定の水彩柄（イラスト未登録の日に表示） ── */
   .bg-base{
@@ -34,10 +34,10 @@
     transition:opacity .4s ease-in-out;
   }
   .bg-base.is-hidden{ opacity:0; }
-  /* ── 背景レイヤー③：干支のカラースケープ（あるときだけフェードイン） ── */
+  /* ── 背景レイヤー③：干支のカラースケープ（あるときだけフェードイン・拡大して色の密度を出す） ── */
   .bg-scape{
     position:fixed; inset:0; z-index:-1;
-    background-size:cover;
+    background-size:180%;
     background-position:center;
     opacity:0;
     transition:opacity .4s ease-in-out;
