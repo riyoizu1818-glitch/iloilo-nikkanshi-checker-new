@@ -74,8 +74,8 @@
   .panel{
     width:min(360px,90vw);
     border-radius:var(--panel-radius);
-    background:rgba(255,255,255,.62);
-    box-shadow:0 8px 24px rgba(0,0,0,.1);
+    background:rgba(255,255,255,.88);
+    box-shadow:0 8px 24px rgba(0,0,0,.12);
     overflow:hidden;
     flex-shrink:0;
   }
@@ -156,19 +156,18 @@
     color:#aaa;
   }
 
-  /* ── イラストエリア（縦長・全体表示・ギャラリー風に余白多め） ── */
+  /* ── イラストエリア（画像の実比率のまま・隙間なく・ひとまわり小さく） ── */
   .panel-art-wrap{
     opacity:1;
     transition:opacity .4s ease-in-out;
-    padding:4px 32px 0;
+    padding:4px 46px 0;
     display:flex;
     flex-direction:column;
     align-items:center;
   }
   .panel-art{
     width:100%;
-    max-width:200px;
-    aspect-ratio: 4 / 5;
+    max-width:150px;
     border-radius:16px;
     overflow:hidden;
     background-color:rgba(255,255,255,.35);
@@ -179,9 +178,11 @@
   }
   .panel-art img{
     width:100%;
-    height:100%;
-    object-fit:contain;
+    height:auto;
     display:block;
+  }
+  .panel-art.is-pending{
+    aspect-ratio: 4 / 5;
   }
   .pending-msg{
     font-size:12px;
@@ -362,6 +363,7 @@
 
     setTimeout(()=>{
       if(url){
+        panelArtEl.classList.remove('is-pending');
         panelArtEl.innerHTML = `<img src="${ILLUSTRATIONS_DIR}/${numStr}.jpg" alt="No.${num} カラースケープ" />`;
         panelLinkEl.href = url;
         panelLinkEl.textContent = 'この景色をひらく';
@@ -373,6 +375,7 @@
         bgScapeEl.style.backgroundImage = `url('${ILLUSTRATIONS_DIR}/${numStr}.jpg')`;
         requestAnimationFrame(()=> bgScapeEl.classList.add('is-visible'));
       } else {
+        panelArtEl.classList.add('is-pending');
         panelArtEl.innerHTML = '<div class="pending-msg"><span class="pin">🖌️</span>この景色は制作中です</div>';
         panelLinkEl.textContent = '準備中';
         panelLinkEl.href = '#';
