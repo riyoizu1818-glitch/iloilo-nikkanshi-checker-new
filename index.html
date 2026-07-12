@@ -17,9 +17,24 @@
   body{
     font-family:'Hiragino Kaku Gothic ProN', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
     text-align:center;
+    position:relative;
+  }
+
+  /* ── 背景レイヤー（既定の水彩柄。常に一番下に敷く） ── */
+  .bg-base{
+    position:fixed; inset:0; z-index:-2;
     background:url('iloiloback.jpg') no-repeat center center;
     background-size:cover;
   }
+  /* ── 背景レイヤー（干支のカラースケープ。あるときだけフェードイン） ── */
+  .bg-scape{
+    position:fixed; inset:0; z-index:-1;
+    background-size:cover;
+    background-position:center;
+    opacity:0;
+    transition:opacity .8s ease-in-out;
+  }
+  .bg-scape.is-visible{ opacity:1; }
 
   /* ── 右上：テキストのヘッダーメニュー ── */
   .headnav{
@@ -36,8 +51,15 @@
     color:#666;
     flex-shrink:0;
   }
-  .headnav a{ color:inherit; text-decoration:none; padding:0 8px; line-height:1; }
-  .headnav a + a{ margin-left:8px; padding-left:10px; border-left:2px solid rgba(0,0,0,.28); }
+  .headnav a{
+    color:inherit;
+    text-decoration:none;
+    padding:4px 8px;
+    line-height:1;
+    background:rgba(255,255,255,.5);
+    border-radius:999px;
+  }
+  .headnav a + a{ margin-left:6px; padding-left:8px; border-left:none; }
   .headnav a:hover{ color:#333; }
 
   /* ── 本体（画面ぴったり・スクロールなし） ── */
@@ -183,16 +205,19 @@
 
   .nav{ flex-shrink:0; }
   .nav .to-calendar{
-    text-decoration:none; font-size:11px; font-weight:600;
-    color:#888; background:transparent; border:1px solid rgba(0,0,0,.18);
-    padding:5px 11px; border-radius:999px; display:inline-block;
+    text-decoration:none; font-size:12px; font-weight:700;
+    color:#fff; background:rgba(255,104,182,.75); border:1px solid rgba(255,255,255,.4);
+    padding:7px 16px; border-radius:999px; display:inline-block;
   }
-  .nav .to-calendar:hover{ color:#555; border-color:rgba(0,0,0,.32); }
+  .nav .to-calendar:hover{ background:rgba(255,104,182,.9); }
 
   .support-footer { display:none !important; }
 </style>
 </head>
 <body class="is-initializing">
+
+  <div class="bg-base"></div>
+  <div class="bg-scape" id="bgScape"></div>
 
   <nav class="headnav">
     <a href="https://izuchan.com/nikkanshi-checker-guide/">使い方</a>
@@ -295,6 +320,7 @@
   const panelArtWrapEl = document.getElementById('panelArtWrap');
   const panelArtEl = document.getElementById('panelArt');
   const panelLinkEl = document.getElementById('panelLink');
+  const bgScapeEl = document.getElementById('bgScape');
 
   let curYear, curMonth;
 
@@ -315,6 +341,7 @@
     const url = etoArticleUrls[num];
 
     panelArtWrapEl.style.opacity = 0;
+    bgScapeEl.classList.remove('is-visible');
 
     setTimeout(()=>{
       if(url){
@@ -325,6 +352,10 @@
         panelLinkEl.removeAttribute('aria-disabled');
         panelLinkEl.setAttribute('target','_blank');
         panelLinkEl.setAttribute('rel','noopener noreferrer');
+
+        // 背景にも同じカラースケープをふわっと反映
+        bgScapeEl.style.backgroundImage = `url('${ILLUSTRATIONS_DIR}/${numStr}.jpg')`;
+        requestAnimationFrame(()=> bgScapeEl.classList.add('is-visible'));
       } else {
         panelArtEl.style.backgroundImage = 'none';
         panelArtEl.innerHTML = '<div class="pending-msg"><span class="pin">🖌️</span>この景色は制作中です</div>';
@@ -332,6 +363,7 @@
         panelLinkEl.href = '#';
         panelLinkEl.setAttribute('aria-disabled','true');
         panelLinkEl.removeAttribute('target');
+        // イラストが無い日は既定の水彩背景にフォールバック（is-visible外したまま）
       }
       panelArtWrapEl.style.opacity = 1;
     }, 220);
