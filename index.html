@@ -34,15 +34,21 @@
     transition:opacity .4s ease-in-out;
   }
   .bg-base.is-hidden{ opacity:0; }
-  /* ── 背景レイヤー③：干支のカラースケープ（あるときだけフェードイン・拡大して色の密度を出す） ── */
+  /* ── 背景レイヤー③：干支のカラースケープ（あるときだけフェードイン） ──
+     PC（広い画面）は原寸(cover)、スマホ幅では拡大して色の密度を出す。
+  */
   .bg-scape{
     position:fixed; inset:0; z-index:-1;
-    background-size:170%;
+    background-size:cover;
     background-position:center;
     opacity:0;
     transition:opacity .4s ease-in-out;
   }
   .bg-scape.is-visible{ opacity:1; }
+
+  @media (max-width:600px){
+    .bg-scape{ background-size:180%; }
+  }
 
   /* ── 右上：テキストのヘッダーメニュー ── */
   .headnav{
