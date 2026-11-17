@@ -11,6 +11,12 @@
     --field-border:#cfd6e0; --field-radius:8px; --field-height:34px;
     --field-pad-x:9px; --caret-color:#7aa8ff;
     --panel-radius:44px;
+    --icon-size:48px;              /* ヘッダーアイコンの大きさ（PC）。ここを変えるだけで全部が変わります */
+    --icon-size-mobile:48px;       /* ヘッダーアイコンの大きさ（スマホ幅） */
+    --head-h:calc(var(--icon-size) + max(8px, env(safe-area-inset-top)));  /* ヘッダー分の高さ（本体の高さ計算用） */
+  }
+  @media (max-width:480px){
+    :root{ --icon-size:var(--icon-size-mobile); }
   }
 
   html,body{ margin:0; padding:0; height:100%; -webkit-text-size-adjust:100%; color:var(--ink); overflow:hidden; }
@@ -50,7 +56,7 @@
     .bg-scape{ background-size:180%; }
   }
 
-  /* ── 右上：テキストのヘッダーメニュー ── */
+  /* ── 右上：アイコンボタン式ヘッダーメニュー（カレンダーと共通） ── */
   .headnav{
     width:min(720px,92vw);
     margin:0 auto;
@@ -58,25 +64,28 @@
     display:flex;
     justify-content:flex-end;
     align-items:center;
-    font-family:'Futura','Avenir Next','Montserrat',sans-serif;
-    font-weight:500;
-    letter-spacing:.02em;
-    font-size:14px;
-    color:#666;
+    gap:8px;
     flex-shrink:0;
   }
   .headnav a{
-    color:inherit;
-    text-decoration:none;
-    padding:0 8px;
-    line-height:1;
+    border:none; background:transparent; padding:0; margin:0; cursor:pointer;
+    display:block; line-height:0;
   }
-  .headnav a + a{ margin-left:8px; padding-left:10px; border-left:2px solid rgba(0,0,0,.28); }
-  .headnav a:hover{ color:#333; }
+  .icon-btn{
+    width:var(--icon-size);
+    height:var(--icon-size);
+    border-radius:11px;
+    overflow:hidden;
+    box-shadow:0 2px 6px rgba(0,0,0,.12);
+    background:#fff;
+    display:block;
+  }
+  .icon-btn img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .icon-btn:active{ transform:scale(.92); }
 
   /* ── 本体（画面ぴったり・スクロールなし） ── */
   .wrap{
-    height:100svh;
+    height:calc(100svh - var(--head-h));
     padding:0 16px calc(10px + env(safe-area-inset-bottom));
     display:flex; flex-direction:column; justify-content:center; align-items:center; gap:10px;
     box-sizing:border-box;
@@ -265,9 +274,13 @@
   <div class="bg-base" id="bgBase"></div>
   <div class="bg-scape" id="bgScape"></div>
 
-  <nav class="headnav">
-    <a href="https://izuchan.com/nikkanshi-checker-guide/">使い方</a>
-    <a href="https://izuchan.com/">HOME</a>
+  <nav class="headnav" aria-label="Header menu">
+    <a class="icon-btn" href="https://izuchan.com/nikkanshi-checker-guide/" title="使い方">
+      <img class="icon-img" data-base="icons/usage-icon" alt="使い方">
+    </a>
+    <a class="icon-btn" href="https://izuchan.com/" title="HOME">
+      <img class="icon-img" data-base="icons/home-icon" alt="HOME">
+    </a>
   </nav>
 
   <div class="wrap">
@@ -357,8 +370,30 @@
      例: 24: "https://izuchan.com/hinoto-i/"
   */
   const etoArticleUrls = {
-    // 24: "https://izuchan.com/hinoto-i/",
-    // 17: "https://izuchan.com/kanoe-tatsu/",
+    15: "https://www.instagram.com/p/DFpSIBUywh3/?igsh=aDF2aDlyNHJsczd5",
+    16: "https://www.instagram.com/p/DGz4j3JyrvB/?igsh=bjk0M3NmdnkxNTdz",
+    17: "https://www.instagram.com/p/DIAAFrnTrSF/?igsh=cnp4b3MxbmQ1dm12",
+    18: "https://www.instagram.com/p/DJQHC8LSxAz/?igsh=cTg5NDZxNjJ3cmps",
+    19: "https://www.instagram.com/p/DKfq9WGTi0J/?igsh=MXdmajdxNmQ5Z28zdA==",
+    20: "https://www.instagram.com/p/DLvkExATTAl/?igsh=OG03cGwwbWdzdWcw",
+    21: "https://www.instagram.com/p/DM_c_Mgzaa_/?igsh=MTB3YXY1NzdnZW1qeQ==",
+    22: "https://izuchan.com/tsukinokanshi-1/",
+    23: "https://izuchan.com/tsukinokanshi-2/",
+    24: "https://izuchan.com/kanshi-colorscape-3/",
+    25: "https://izuchan.com/colorscape-kanshi-tsuchinoene/",
+    26: "https://izuchan.com/colorscape-tsuchinoto-ushi/",
+    27: "https://izuchan.com/colorscape-kanoe-tora/",
+    28: "https://izuchan.com/color-scape-kanoto-u/",
+    29: "https://izuchan.com/color-scape-mizunoe-tatsu/",
+    30: "https://izuchan.com/colo-rscape-mizunoto-mi/",
+    31: "https://izuchan.com/color-scape-kinoe-uma/",
+    32: "https://izuchan.com/colorscape-kinoto-hitsuji/",
+    33: "https://izuchan.com/colorscape-hinoe-saru/",
+    34: "https://izuchan.com/colorscape-hinoto-tori/",
+    35: "https://izuchan.com/color-scape-tsuchinoe-inu/",
+    36: "https://izuchan.com/color-scape-tsuchinoto-i/",
+    42: "https://www.instagram.com/p/DFmB2VuyQ6f/?igsh=Z2lwNHpwYTVqN2Q3",
+    43: "https://izuchan.com/colorscape-hinoeuma-year-2026/",
   };
 
   const baseDate = new Date(1984, 2, 31);
@@ -399,7 +434,7 @@
      スマホやアプリによってアップロード時の拡張子が変わることがあるため、
      見つかるまで順番に試して、見つかった拡張子のURLをコールバックで返す。
   */
-  const EXT_CANDIDATES = ['jpg','JPG','jpeg','JPEG'];
+  const EXT_CANDIDATES = ['jpg','JPG','jpeg','JPEG','png','PNG'];
   function resolveImageUrl(baseNoExt, onFound, onNotFound){
     let i = 0;
     function tryNext(){
@@ -412,6 +447,20 @@
     }
     tryNext();
   }
+
+  /* ── ヘッダーのアイコン画像を拡張子自動判定で読み込む ──
+     見つからない場合はボタンごと非表示にする。
+  */
+  document.querySelectorAll('.icon-img[data-base]').forEach(img=>{
+    resolveImageUrl(
+      img.getAttribute('data-base'),
+      (foundUrl)=>{ img.src = foundUrl; },
+      ()=>{
+        const btn = img.closest('a');
+        if(btn) btn.style.display = 'none';
+      }
+    );
+  });
 
   function updatePanel(num){
     const numStr = String(num).padStart(2,'0');
