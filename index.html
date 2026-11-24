@@ -13,7 +13,6 @@
     --panel-radius:44px;
     --icon-size:48px;              /* ヘッダーアイコンの大きさ（PC）。ここを変えるだけで全部が変わります */
     --icon-size-mobile:48px;       /* ヘッダーアイコンの大きさ（スマホ幅） */
-    --head-h:calc(var(--icon-size) + max(8px, env(safe-area-inset-top)));  /* ヘッダー分の高さ（本体の高さ計算用） */
   }
   @media (max-width:480px){
     :root{ --icon-size:var(--icon-size-mobile); }
@@ -24,6 +23,7 @@
     font-family:'Hiragino Kaku Gothic ProN', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
     text-align:center;
     position:relative;
+    display:flex; flex-direction:column;   /* お知らせバー＋ヘッダー＋本体を縦に並べ、本体が残りの高さを使う */
   }
 
   /* ── 背景レイヤー①：ベージュ単色（一番下・常時・切り替えの"つなぎ"にも使う） ── */
@@ -56,6 +56,61 @@
     .bg-scape{ background-size:180%; }
   }
 
+  /* ── お知らせコーナー（常設の告知バー。無いときは高さゼロで完全非表示） ── */
+  .announce-bar{
+    width:min(720px,92vw);
+    margin:0 auto;                 /* 非表示時は余白もゼロ */
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:rgba(255,255,255,.8);
+    border-radius:16px;
+    padding:0 10px;
+    box-sizing:border-box;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    opacity:0;
+    max-height:0;
+    overflow:hidden;
+    pointer-events:none;
+    flex-shrink:0;
+    transition:opacity .3s ease-in-out, max-height .3s ease-in-out, margin .3s ease-in-out, padding .3s ease-in-out;
+  }
+  .announce-bar.is-visible{
+    opacity:1;
+    margin:max(10px, env(safe-area-inset-top)) auto 0;
+    max-height:120px;
+    padding:8px 10px;
+    pointer-events:auto;
+  }
+  .announce-thumb{
+    width:42px; height:42px; border-radius:10px; overflow:hidden;
+    flex-shrink:0; background:#f0f0f0; display:block;
+  }
+  .announce-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .announce-body{ flex:1 1 auto; min-width:0; text-align:left; }
+  .announce-text{ font-size:12px; font-weight:700; color:#333; line-height:1.3; }
+  .announce-period{ font-size:10px; color:#999; margin-top:1px; }
+  .announce-links{ display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin-top:5px; }
+  /* 最優先の行き先：強調ピルボタン */
+  .announce-link{
+    font-size:10.5px; font-weight:700; color:#fff; background:var(--brand);
+    padding:4px 12px; border-radius:999px; text-decoration:none; white-space:nowrap;
+    box-shadow:0 2px 6px rgba(255,104,182,.35);
+  }
+  /* 軽い案内：ボタンではなくテキストリンク */
+  .announce-link-text{
+    font-size:10.5px; font-weight:700; color:var(--brand);
+    text-decoration:none; white-space:nowrap; background:none; padding:0;
+  }
+  .announce-close{
+    border:none; background:rgba(0,0,0,.07); color:#777;
+    width:22px; height:22px; border-radius:50%;
+    font-size:11px; line-height:1; cursor:pointer; flex-shrink:0;
+  }
+  @media (max-width:480px){
+    .announce-text{ font-size:11.5px; }
+  }
+
   /* ── 右上：アイコンボタン式ヘッダーメニュー（カレンダーと共通） ── */
   .headnav{
     width:min(720px,92vw);
@@ -85,7 +140,7 @@
 
   /* ── 本体（画面ぴったり・スクロールなし） ── */
   .wrap{
-    height:calc(100svh - var(--head-h));
+    flex:1 1 auto; min-height:0;
     padding:0 16px calc(10px + env(safe-area-inset-bottom));
     display:flex; flex-direction:column; justify-content:center; align-items:center; gap:10px;
     box-sizing:border-box;
@@ -274,6 +329,20 @@
   <div class="bg-base" id="bgBase"></div>
   <div class="bg-scape" id="bgScape"></div>
 
+  <!-- ── お知らせコーナー ──
+       内容は下のJS内「ANNOUNCEMENT」という設定だけで管理できます。
+       ANNOUNCEMENT を null にすると、このバーは完全に非表示（高さゼロ）になります。
+  -->
+  <div class="announce-bar" id="announceBar">
+    <a class="announce-thumb" id="announceThumb" target="_blank" rel="noopener noreferrer"></a>
+    <div class="announce-body">
+      <div class="announce-text" id="announceText"></div>
+      <div class="announce-period" id="announcePeriod"></div>
+      <div class="announce-links" id="announceLinks"></div>
+    </div>
+    <button class="announce-close" id="announceClose" type="button" aria-label="閉じる">✕</button>
+  </div>
+
   <nav class="headnav" aria-label="Header menu">
     <a class="icon-btn" href="https://izuchan.com/nikkanshi-checker-guide/" title="使い方">
       <img class="icon-img" data-base="illustrations/usage-icon" alt="使い方">
@@ -461,6 +530,96 @@
       }
     );
   });
+
+  /* ══════════════════════════════════════════════════════════
+     ── お知らせコーナー（常設の告知バー・カレンダーと共通の仕組み） ──
+     ANNOUNCEMENT を null にすると、バーは完全に非表示（高さゼロ）になります。
+
+     image         … バー左のサムネイル。拡張子なしのパスでOK（画像自体もリンクになります）
+     imageLink     … 画像をタップした時の行き先。空なら primaryLink の url
+     primaryLink   … 一番強調したいリンク（ピンクの太いボタン）
+     secondaryLink … 軽い案内のテキストリンク。url が空なら表示されません
+     ✕で閉じても、次に開いたときはまた表示されます。
+     ══════════════════════════════════════════════════════════ */
+  const ANNOUNCEMENT = {
+    id: 'suzuri-calendar-2027',
+    image: 'illustrations/announce-suzuri-calendar',
+    imageLink: '',
+    text: 'オリジナルカレンダーの布、販売中です🌬️',
+    period: '発売期間　11月19日 〜 1月18日',
+    primaryLink: { label: '商品はここから', url: 'https://suzuri.jp/izuchan-iloilo' },
+    secondaryLink: { label: '▶︎ こんな商品です', url: 'https://izuchan.com/izu-calendar-cloth-2027/' }
+  };
+  // お知らせが無い期間はこちらに切り替えてください：
+  // const ANNOUNCEMENT = null;
+
+  (function initAnnouncement(){
+    const bar = document.getElementById('announceBar');
+    if(!ANNOUNCEMENT){ return; }
+
+    const textEl = document.getElementById('announceText');
+    const periodEl = document.getElementById('announcePeriod');
+    const linksEl = document.getElementById('announceLinks');
+    const thumbEl = document.getElementById('announceThumb');
+    const closeBtn = document.getElementById('announceClose');
+
+    textEl.textContent = ANNOUNCEMENT.text || '';
+
+    if(ANNOUNCEMENT.period){
+      periodEl.textContent = ANNOUNCEMENT.period;
+      periodEl.style.display = '';
+    } else {
+      periodEl.style.display = 'none';
+    }
+
+    linksEl.innerHTML = '';
+    const primary = ANNOUNCEMENT.primaryLink;
+    if(primary && primary.url){
+      const a = document.createElement('a');
+      a.className = 'announce-link';
+      a.href = primary.url;
+      a.textContent = primary.label || 'もっと見る';
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      linksEl.appendChild(a);
+    }
+    const secondary = ANNOUNCEMENT.secondaryLink;
+    if(secondary && secondary.url){
+      const a = document.createElement('a');
+      a.className = 'announce-link-text';
+      a.href = secondary.url;
+      a.textContent = secondary.label || '▶︎ こんな商品です';
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      linksEl.appendChild(a);
+    }
+
+    if(ANNOUNCEMENT.image){
+      resolveImageUrl(
+        ANNOUNCEMENT.image,
+        (foundUrl)=>{
+          thumbEl.innerHTML = `<img src="${foundUrl}" alt="">`;
+          thumbEl.style.display = '';
+          const linkUrl = ANNOUNCEMENT.imageLink || (primary && primary.url) || '';
+          if(linkUrl){
+            thumbEl.href = linkUrl;
+          } else {
+            thumbEl.removeAttribute('href');
+            thumbEl.style.cursor = 'default';
+          }
+        },
+        ()=>{ thumbEl.style.display = 'none'; }
+      );
+    } else {
+      thumbEl.style.display = 'none';
+    }
+
+    closeBtn.addEventListener('click', ()=>{
+      bar.classList.remove('is-visible');
+    });
+
+    bar.classList.add('is-visible');
+  })();
 
   function updatePanel(num){
     const numStr = String(num).padStart(2,'0');
